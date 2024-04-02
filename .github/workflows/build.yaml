@@ -1,0 +1,71 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  convert_via_pandoc:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get changed files
+        id: changed-files-yaml
+        uses: tj-actions/changed-files@v42
+        with:
+          files_yaml: |
+           paper:
+              - paper/**
+              - paper/images/**
+              - csl/**
+              - data/templates/**
+
+      - name: Set short git commit SHA
+        id: vars
+        run: |
+          calculatedSha=$(git rev-parse --short ${{ github.sha }})
+          echo "COMMIT_SHORT_SHA=v$calculatedSha" >> $GITHUB_ENV
+
+      - name: Set env for time now
+        run: echo "NOW=v$(date +'%Y%m%d')" >> $GITHUB_ENV
+
+      - name: Run step if paper file(s) change
+        if: steps.changed-files-yaml.outputs.paper_any_changed == 'true'
+        env:
+          ALL_CHANGED_FILES: ${{ steps.changed-files-yaml.outputs.paper_all_changed_files }}
+        run: |
+          echo "One or more files in the paper folder has changed."
+          echo "List all the files that have changed: $ALL_CHANGED_FILES"
+
+      - name: Install pandoc if paper file(s) change
+        if: steps.changed-files-yaml.outputs.paper_any_changed == 'true'
+        run: sudo apt-get update && curl -sLO https://github.com/jgm/pandoc/releases/download/3.1.12.1/pandoc-3.1.12.1-1-amd64.deb && sudo dpkg -i pandoc-3.1.12.1-1-amd64.deb && pandoc -v
+
+      - name: Install graphviz and panflute if paper file(s) change
+        if: steps.changed-files-yaml.outputs.paper_any_changed == 'true'
+        run: sudo apt-get install graphviz libgraphviz-dev -y && pip install panflute graphviz
+
+      - name: Install pygraphviz if paper file(s) change
+        if: steps.changed-files-yaml.outputs.paper_any_changed == 'true'
+        run: pip install pygraphviz && pip list
+      
+      - name: Install texlive if paper file(s) change
+        if: steps.changed-files-yaml.outputs.paper_any_changed == 'true'
+        run: sudo apt-get install texlive-full -y
+
+      - name: Run paper pdf build if paper file(s) change
+        if: steps.changed-files-yaml.outputs.paper_any_changed == 'true'
+        run: cd paper && pandoc --bibliography article.bibtex --citeproc article.md -o article.pdf --from markdown --metadata-file=metadata.yaml --data-dir=../data --template eisvogel.tex --listings -F panflute && pwd && ls -la
+
+      - name: Upload article pdf if paper file(s) change
+        if: steps.changed-files-yaml.outputs.paper_any_changed == 'true'
+        uses: svenstaro/upload-release-action@v2
+        with:
+          file: /home/runner/work/paper/paper/paper/article.pdf
+          overwrite: true
+          tag: ${{ env.NOW }}
+          body: ${{ github.event.head_commit.message }}
