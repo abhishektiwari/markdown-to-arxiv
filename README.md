@@ -1,10 +1,10 @@
-# Academic Paper Template
+# Markdown to arXiv Tempalte
 
-A template repository for writing academic research papers using Markdown and generating professional PDFs with Pandoc. This template supports multiple output formats including Eisvogel (professional academic papers) and arXiv submission format.
+A template repository for writing academic research papers using Markdown and generating professional PDFs with Pandoc. This template supports multiple output formats including arXiv submission format and Eisvogel (professional academic papers).
 
 ## Features
 
-- **Multiple Output Formats**: [Eisvogel template](https://github.com/Wandmalfarbe/pandoc-latex-template) for professional papers, [arXiv template](https://github.com/kourgeorge/arxiv-style) for submissions
+- **Multiple Output Formats**: [arXiv template](https://github.com/kourgeorge/arxiv-style) for submissions, [Eisvogel template](https://github.com/Wandmalfarbe/pandoc-latex-template) for professional papers
 - **Markdown-First**: Write in Markdown with full LaTeX math support
 - **Citation Management**: Automatic bibliography generation with BibTeX
 - **Diagram Support**: Integrated GraphViz and PlantUML diagram generation
