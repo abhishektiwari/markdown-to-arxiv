@@ -864,7 +864,18 @@ $endif$
 $endif$
 
 \usepackage[calc]{datetime2}
-\DTMsavedate{publishdate}{$date$}
+\usepackage{xstring}
+
+% Improved date handling - support both simple dates and ISO datetime format
+\newcommand{\publishisodatetime}{$date$}
+\StrBefore{\publishisodatetime}{T}[\publishisodate]
+\IfSubStr{\publishisodatetime}{T}{%
+  % If date contains 'T', extract date part before 'T'
+  \DTMsavedate{publishdate}{\publishisodate}
+}{%
+  % Otherwise use the date as-is
+  \DTMsavedate{publishdate}{$date$}
+}
 
 %
 % header and footer

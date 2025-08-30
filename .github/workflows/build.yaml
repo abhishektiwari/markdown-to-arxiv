@@ -52,20 +52,63 @@ jobs:
       - name: Install pygraphviz if paper file(s) change
         if: steps.changed-files-yaml.outputs.paper_any_changed == 'true'
         run: pip install pygraphviz && pip list
+
+      - name: Install PlantUML and Java if paper file(s) change
+        if: steps.changed-files-yaml.outputs.paper_any_changed == 'true'
+        run: |
+          sudo apt-get install default-jre -y
+          wget -O /tmp/plantuml.jar https://github.com/plantuml/plantuml/releases/download/v1.2024.8/plantuml-1.2024.8.jar
+          sudo mv /tmp/plantuml.jar /usr/local/bin/
+          echo '#!/bin/bash' | sudo tee /usr/local/bin/plantuml
+          echo 'java -jar /usr/local/bin/plantuml.jar "$@"' | sudo tee -a /usr/local/bin/plantuml
+          sudo chmod +x /usr/local/bin/plantuml
+          plantuml -version
       
       - name: Install texlive if paper file(s) change
         if: steps.changed-files-yaml.outputs.paper_any_changed == 'true'
         run: sudo apt-get install texlive-full -y
 
-      - name: Run paper pdf build if paper file(s) change
+      - name: Build PDFs using make commands if paper file(s) change
         if: steps.changed-files-yaml.outputs.paper_any_changed == 'true'
-        run: cd paper && pandoc --bibliography article.bibtex --citeproc article.md -o article.pdf --from markdown --metadata-file=metadata.yaml --data-dir=../data --template eisvogel.tex --listings -F panflute && pwd && ls -la
+        run: |
+          make eisvogel
+          make arxiv
+          make arxiv-dist
+          ls -la output/
 
-      - name: Upload article pdf if paper file(s) change
+      - name: Create arxiv submission zip if paper file(s) change
+        if: steps.changed-files-yaml.outputs.paper_any_changed == 'true'
+        run: |
+          cd output
+          zip -r arxiv-submission.zip arxiv-submission/
+          ls -la
+
+      - name: Upload eisvogel PDF if paper file(s) change
         if: steps.changed-files-yaml.outputs.paper_any_changed == 'true'
         uses: svenstaro/upload-release-action@v2
         with:
-          file: ${{ github.workspace }}/paper/article.pdf
+          file: ${{ github.workspace }}/output/article-eisvogel.pdf
+          asset_name: article-eisvogel.pdf
+          overwrite: true
+          tag: ${{ env.NOW }}
+          body: ${{ github.event.head_commit.message }}
+
+      - name: Upload arxiv PDF if paper file(s) change
+        if: steps.changed-files-yaml.outputs.paper_any_changed == 'true'
+        uses: svenstaro/upload-release-action@v2
+        with:
+          file: ${{ github.workspace }}/output/article-arxiv.pdf
+          asset_name: article-arxiv.pdf
+          overwrite: true
+          tag: ${{ env.NOW }}
+          body: ${{ github.event.head_commit.message }}
+
+      - name: Upload arxiv submission package if paper file(s) change
+        if: steps.changed-files-yaml.outputs.paper_any_changed == 'true'
+        uses: svenstaro/upload-release-action@v2
+        with:
+          file: ${{ github.workspace }}/output/arxiv-submission.zip
+          asset_name: arxiv-submission.zip
           overwrite: true
           tag: ${{ env.NOW }}
           body: ${{ github.event.head_commit.message }}

@@ -27,8 +27,8 @@ affiliation:
    id: 2
 journal:
   title: Journal of Xyz
-# ISO 8601 standard format i.e. YYYY-MM-DD 
-date: 2019-09-07
+# ISO 8601 standard format i.e. YYYY-MM-DDTHH:MM:SS 
+date: 2019-09-07T00:00:00
 titlepage: true
 titlepage-color: FFFFFF
 titlepage-text-color: "000000"
@@ -50,5 +50,6 @@ header-includes:
   - \usepackage{algorithm2e}
   - \usepackage{tikz}
 
-panflute-filters: [graphvizv1]
+panflute-filters: [graphvizv1, plantumlv1]
 panflute-path: ../data/filters
+plantuml-format: svg

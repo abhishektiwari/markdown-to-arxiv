@@ -15,7 +15,7 @@ from panflute import toJSONFilter, Str, Image, CodeBlock, Figure, Plain, Caption
 def sha1(x):
     return hashlib.sha1(x.encode(sys.getfilesystemencoding())).hexdigest()
 
-imagedir = "graphviz-images"
+imagedir = "../output/graphviz"
 
 
 def graphviz(elem, doc):
@@ -45,7 +45,7 @@ def graphviz(elem, doc):
         src = imagedir + '/' + filename + '.' + filetype
         if not os.path.isfile(src):
             try:
-                os.mkdir(imagedir)
+                os.makedirs(imagedir, exist_ok=True)
                 sys.stderr.write('Created directory ' + imagedir + '\n')
             except OSError:
                 pass
@@ -58,5 +58,4 @@ def main(doc=None):
     return toJSONFilter(graphviz, doc=doc)
 
 if __name__ == "__main__":
-    print("I am here")
     main()
