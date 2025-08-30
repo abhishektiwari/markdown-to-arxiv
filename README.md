@@ -1,4 +1,4 @@
-# Markdown to arXiv Tempalte
+# Markdown to arXiv Template
 
 A template repository for writing academic research papers using Markdown and generating professional PDFs with Pandoc. This template supports multiple output formats including arXiv submission format and Eisvogel (professional academic papers).
 
