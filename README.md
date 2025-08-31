@@ -1,16 +1,16 @@
-# Markdown to arXiv Template
+# Markdown Academic Paper Template
 
-A template repository for writing academic research papers using Markdown and generating professional PDFs with Pandoc. This template supports multiple output formats including arXiv submission format and Eisvogel (professional academic papers).
+A template repository for writing academic research papers using Markdown and generating professional PDFs with Pandoc. This template supports multiple output formats including arXiv submission, bioRxiv preprint, and Eisvogel (professional academic papers).
 
 ## Features
 
-- **Multiple Output Formats**: [arXiv template](https://github.com/kourgeorge/arxiv-style) for submissions, [Eisvogel template](https://github.com/Wandmalfarbe/pandoc-latex-template) for professional papers
+- **Multiple Output Formats**: [arXiv template](https://github.com/kourgeorge/arxiv-style), [bioRxiv template](https://www.overleaf.com/latex/templates/arxiv-slash-biorxiv-template/phncddwqtxpc), [Eisvogel template](https://github.com/Wandmalfarbe/pandoc-latex-template)
 - **Markdown-First**: Write in Markdown with full LaTeX math support
 - **Citation Management**: Automatic bibliography generation with BibTeX
 - **Diagram Support**: Integrated GraphViz and PlantUML diagram generation
 - **Cross-References**: Automatic numbering and referencing of sections, figures, and tables
 - **Professional Styling**: Clean, academic-quality PDF output
-- **arXiv Ready**: Complete submission package generation including LaTeX source and assets
+- **Submission Ready**: Complete submission package generation for arXiv and bioRxiv including LaTeX source and assets
 
 ## Quick Start
 
@@ -39,8 +39,14 @@ make eisvogel
 # Build with arxiv template (generates both PDF and LaTeX source)
 make arxiv
 
+# Build with bioRxiv template (preprint format with wide figures)
+make biorxiv
+
 # Prepare complete arxiv submission package with all assets
 make arxiv-dist
+
+# Prepare complete bioRxiv submission package with all assets
+make biorxiv-dist
 
 # Clean all generated files
 make clean
@@ -55,7 +61,9 @@ make help
 |---------|-------------|-------------|
 | `make eisvogel` | `output/article-eisvogel.pdf` | Professional academic paper with clean typography, ideal for submissions to journals and conferences |
 | `make arxiv` | `output/article-arxiv.pdf` | arXiv-compatible PDF following arXiv guidelines with proper section numbering |
+| `make biorxiv` | `output/article-biorxiv.pdf` | bioRxiv preprint format with wide figures extending into margins, author emails, and ORCID links |
 | `make arxiv-dist` | `output/arxiv-submission/` directory | Complete submission package containing:<br>• LaTeX source file<br>• Bibliography (.bibtex)<br>• All images (PNG, JPG, PDF, EPS)<br>• SVG files converted to PDF (arXiv compatible)<br>• Style files (arxiv.sty)<br>• Generated diagrams |
+| `make biorxiv-dist` | `output/biorxiv-submission/` directory | Complete submission package containing:<br>• LaTeX source file<br>• Bibliography (.bibtex)<br>• All images (PNG, JPG, PDF, EPS, SVG)<br>• Generated diagrams<br>• SVG files preserved (bioRxiv compatible) |
 
 #### Template Differences
 
@@ -70,6 +78,13 @@ make help
 - Section numbering starts from 1 (required by arXiv)
 - Includes required arXiv style files
 - Optimized for arXiv preprint submission
+
+**bioRxiv Template:**
+- bioRxiv preprint format with wide figure layout
+- Figures automatically extend into left margin for maximum width utilization
+- Author emails displayed with ORCID links and corresponding author marking (*)
+- Gray figure captions with justified text formatting
+- SVG format support (no conversion required)
 
 ## Steps for Action build
 
