@@ -14,12 +14,19 @@ tags:
   - tag2
 # Name of Authors in order
 author:
-  - name: First Last
+  - name: First Author
     orcid: 000-1111-2222-3333
-    surname: Last
+    surname: Author
     given-names: First
-    email: me@example.com
+    email: first@example.com
     affiliation: 1, 2
+    corresponding: true
+  - name: Second Author
+    orcid: 000-1111-2222-3334
+    surname: Author
+    given-names: Second
+    email: second@example.com
+    affiliation: 2
 affiliation:
  - organization: Example Corp
    id: 1

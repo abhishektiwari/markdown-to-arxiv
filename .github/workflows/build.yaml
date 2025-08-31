@@ -74,13 +74,16 @@ jobs:
           make eisvogel
           make arxiv
           make arxiv-dist
+          make biorxiv
+          make biorxiv-dist
           ls -la output/
 
-      - name: Create arxiv submission zip if paper file(s) change
+      - name: Create submission zips if paper file(s) change
         if: steps.changed-files-yaml.outputs.paper_any_changed == 'true'
         run: |
           cd output
           zip -r arxiv-submission.zip arxiv-submission/
+          zip -r biorxiv-submission.zip biorxiv-submission/
           ls -la
 
       - name: Upload eisvogel PDF if paper file(s) change
@@ -103,12 +106,32 @@ jobs:
           tag: ${{ env.NOW }}
           body: ${{ github.event.head_commit.message }}
 
+      - name: Upload bioRxiv PDF if paper file(s) change
+        if: steps.changed-files-yaml.outputs.paper_any_changed == 'true'
+        uses: svenstaro/upload-release-action@v2
+        with:
+          file: ${{ github.workspace }}/output/article-biorxiv.pdf
+          asset_name: article-biorxiv.pdf
+          overwrite: true
+          tag: ${{ env.NOW }}
+          body: ${{ github.event.head_commit.message }}
+
       - name: Upload arxiv submission package if paper file(s) change
         if: steps.changed-files-yaml.outputs.paper_any_changed == 'true'
         uses: svenstaro/upload-release-action@v2
         with:
           file: ${{ github.workspace }}/output/arxiv-submission.zip
           asset_name: arxiv-submission.zip
+          overwrite: true
+          tag: ${{ env.NOW }}
+          body: ${{ github.event.head_commit.message }}
+
+      - name: Upload bioRxiv submission package if paper file(s) change
+        if: steps.changed-files-yaml.outputs.paper_any_changed == 'true'
+        uses: svenstaro/upload-release-action@v2
+        with:
+          file: ${{ github.workspace }}/output/biorxiv-submission.zip
+          asset_name: biorxiv-submission.zip
           overwrite: true
           tag: ${{ env.NOW }}
           body: ${{ github.event.head_commit.message }}

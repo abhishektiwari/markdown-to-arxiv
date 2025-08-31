@@ -15,19 +15,24 @@ EISVOGEL_PDF = $(OUTPUT_DIR)/article-eisvogel.pdf
 ARXIV_PDF = $(OUTPUT_DIR)/article-arxiv.pdf
 ARXIV_TEX = $(OUTPUT_DIR)/article.tex
 ARXIV_DIST = $(OUTPUT_DIR)/arxiv-submission
+BIORXIV_PDF = $(OUTPUT_DIR)/article-biorxiv.pdf
+BIORXIV_TEX = $(OUTPUT_DIR)/article-biorxiv.tex
+BIORXIV_DIST = $(OUTPUT_DIR)/biorxiv-submission
 
 # Default target
-.PHONY: all clean eisvogel arxiv arxiv-dist help
+.PHONY: all clean eisvogel arxiv arxiv-dist biorxiv biorxiv-dist help
 
 all: eisvogel
 
 help:
 	@echo "Available targets:"
-	@echo "  eisvogel    - Build PDF using eisvogel template (default)"
-	@echo "  arxiv       - Build PDF and TEX files using arxiv template"  
-	@echo "  arxiv-dist  - Prepare files for arxiv submission (includes SVGs)"
-	@echo "  clean       - Remove generated files"
-	@echo "  help        - Show this help message"
+	@echo "  eisvogel     - Build PDF using eisvogel template (default)"
+	@echo "  arxiv        - Build PDF and TEX files using arxiv template"  
+	@echo "  arxiv-dist   - Prepare files for arxiv submission (includes SVGs)"
+	@echo "  biorxiv      - Build PDF using bioRxiv template"
+	@echo "  biorxiv-dist - Prepare files for bioRxiv submission"
+	@echo "  clean        - Remove generated files"
+	@echo "  help         - Show this help message"
 
 # Eisvogel format (current build.sh equivalent)
 eisvogel: $(EISVOGEL_PDF)
@@ -74,6 +79,37 @@ $(ARXIV_TEX): $(ARTICLE_MD) $(ARTICLE_BIB) $(METADATA) | $(OUTPUT_DIR)
 		--metadata-file=metadata.yaml \
 		--data-dir=../$(DATA_DIR) \
 		--template arxiv.tex \
+		--listings \
+		-F panflute
+
+# bioRxiv format
+biorxiv: $(BIORXIV_PDF)
+
+$(BIORXIV_PDF): $(ARTICLE_MD) $(ARTICLE_BIB) $(METADATA) | $(OUTPUT_DIR)
+	@echo "Building PDF with bioRxiv template..."
+	cd $(PAPER_DIR) && pandoc \
+		--bibliography article.bibtex \
+		--citeproc \
+		article.md \
+		-o ../$(BIORXIV_PDF) \
+		--from markdown \
+		--metadata-file=metadata.yaml \
+		--data-dir=../$(DATA_DIR) \
+		--template biorxiv.tex \
+		--listings \
+		-F panflute
+
+$(BIORXIV_TEX): $(ARTICLE_MD) $(ARTICLE_BIB) $(METADATA) | $(OUTPUT_DIR)
+	@echo "Generating LaTeX source with bioRxiv template..."
+	cd $(PAPER_DIR) && pandoc \
+		--bibliography article.bibtex \
+		--citeproc \
+		article.md \
+		-o ../$(BIORXIV_TEX) \
+		--from markdown \
+		--metadata-file=metadata.yaml \
+		--data-dir=../$(DATA_DIR) \
+		--template biorxiv.tex \
 		--listings \
 		-F panflute
 
@@ -164,14 +200,63 @@ arxiv-dist: $(ARXIV_TEX) $(ARXIV_PDF)
 	@echo "Contents:"
 	@ls -la $(ARXIV_DIST)/
 
+# Prepare bioRxiv submission package
+biorxiv-dist: $(BIORXIV_TEX) $(BIORXIV_PDF)
+	@echo "Preparing bioRxiv submission package..."
+	@rm -rf $(BIORXIV_DIST)
+	@mkdir -p $(BIORXIV_DIST)
+	
+	# Copy and fix image paths in tex file (convert to relative paths for bioRxiv)
+	@echo "Fixing image paths in LaTeX file..."
+	@sed 's|{../output/[^/]*/\([^}]*\)}|{\1}|g; s|{[^/{}]*\/\([^}]*\)}|{\1}|g' $(BIORXIV_TEX) > $(BIORXIV_DIST)/article-biorxiv.tex
+	
+	# Copy bibliography
+	@cp $(ARTICLE_BIB) $(BIORXIV_DIST)/
+	
+	# Copy image files from paper directory and images folder
+	@echo "Copying image files..."
+	@find $(PAPER_DIR) -name "*.png" -o -name "*.jpg" -o -name "*.jpeg" -o -name "*.pdf" -o -name "*.eps" | \
+		while read img; do \
+			cp "$$img" $(BIORXIV_DIST)/ 2>/dev/null || true; \
+		done
+	
+	# Copy files from images folder if it exists (bioRxiv accepts SVG)
+	@if [ -d "$(PAPER_DIR)/images" ]; then \
+		find $(PAPER_DIR)/images -name "*.png" -o -name "*.jpg" -o -name "*.jpeg" -o -name "*.pdf" -o -name "*.eps" -o -name "*.svg" | \
+			while read img; do \
+				cp "$$img" $(BIORXIV_DIST)/ 2>/dev/null || true; \
+			done; \
+		echo "Copied images from $(PAPER_DIR)/images/"; \
+	fi
+	
+	# Copy and process diagrams from organized output folders
+	@echo "Copying diagram files..."
+	
+	# Copy GraphViz images (already in correct format)
+	@if [ -d "$(OUTPUT_DIR)/graphviz" ]; then \
+		cp $(OUTPUT_DIR)/graphviz/* $(BIORXIV_DIST)/ 2>/dev/null || true; \
+		echo "Copied GraphViz images from $(OUTPUT_DIR)/graphviz/"; \
+	fi
+	
+	# Copy PlantUML files (bioRxiv accepts SVG, so copy all formats)
+	@if [ -d "$(OUTPUT_DIR)/plantuml" ]; then \
+		cp $(OUTPUT_DIR)/plantuml/* $(BIORXIV_DIST)/ 2>/dev/null || true; \
+		echo "Copied PlantUML images from $(OUTPUT_DIR)/plantuml/"; \
+	fi
+	
+	@echo "bioRxiv submission files ready in $(BIORXIV_DIST)/"
+	@echo "Note: SVG files are preserved (bioRxiv accepts SVG format)"
+	@echo "Contents:"
+	@ls -la $(BIORXIV_DIST)/
+
 # Create output directory
 $(OUTPUT_DIR):
 	@mkdir -p $(OUTPUT_DIR)
 
 clean:
 	@echo "Cleaning generated files..."
-	@rm -f $(EISVOGEL_PDF) $(ARXIV_PDF) $(ARXIV_TEX)
-	@rm -rf $(ARXIV_DIST)
+	@rm -f $(EISVOGEL_PDF) $(ARXIV_PDF) $(ARXIV_TEX) $(BIORXIV_PDF) $(BIORXIV_TEX)
+	@rm -rf $(ARXIV_DIST) $(BIORXIV_DIST)
 	@rm -rf $(OUTPUT_DIR)/plantuml $(OUTPUT_DIR)/graphviz
 	@echo "Clean complete."
 
